@@ -1,4 +1,5 @@
 from time import sleep
+import os
 import argparse
 import sys
 import json
@@ -29,7 +30,8 @@ class EmailSweep(Cas):
         email_entries = email_sweep['entries']
         num_entries = len(email_entries)
         json_output = json.dumps(email_entries)
-        self.logger.entry('info', f'Sweep completed. Found {num_entries} entries:\n{json_output}')
+        self.logger.entry('info', f'Sweep completed:\n{json_output}')
+        self.logger.entry('info', f'Found {num_entries} entries')
 
         return email_entries
 
@@ -70,7 +72,8 @@ class EmailSweep(Cas):
         joined_summary = '\n'.join(summary_report)
         self.logger.entry('info', f'Summary report:\n{joined_summary}')
 
-    def proceed_prompt(self, email_entries):
+    @staticmethod
+    def proceed_prompt():
         while True:
             user_response = input('Would you like to proceed? (YES/NO): ')
 
@@ -82,7 +85,7 @@ class EmailSweep(Cas):
 
     def run(self, email_entries):
         mitigate_entries = self.prepare_mitigation(email_entries)
-        proceed = self.proceed_prompt(email_entries)
+        proceed = self.proceed_prompt()
 
         if not proceed:
             sys.exit()
@@ -170,8 +173,8 @@ def get_args():
     parser = argparse.ArgumentParser(description='Email Sweep')
 
     parser.add_argument('--mailbox', action='store', help='Email address of the mailbox to search in')
-    parser.add_argument('--lastndays', action='store', help='Number of days before the point of time when the request '
-                                                            'is sent')
+    parser.add_argument('--lastndays', action='store', type=int, help='Number of days before the point of time when the '
+                                                                      'request is sent')
     parser.add_argument('--start', action='store', help='Start time during which email message are to search')
     parser.add_argument('--end', action='store', help='End time during which email message are to search')
     parser.add_argument('--subject', action='store', help='Subject of email messages to search for')
@@ -200,7 +203,10 @@ def main():
         sys.exit('Error: You must supply at least 1 filter')
 
     log_level = args.pop('log_level').upper()
-    es = EmailSweep(app_name=APP_NAME, print_logger=True, log_level=log_level)
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    log_file_path = f'{dir_path}{os.sep}log.txt'
+    print(log_file_path)
+    es = EmailSweep(app_name=APP_NAME, print_logger=True, log_level=log_level, log_file_path=log_file_path)
 
     email_entries = es.get_entries(args)
     es.run(email_entries)
