@@ -3,6 +3,13 @@
 Uses Trend Micro [Cloud App Security (CAS)](https://www.trendmicro.com/en_au/business/products/user-protection/sps/email-and-collaboration/cloud-app-security.html) to scan and delete/quarantine harmful emails.
 
 ## Setup
+### API Key
+
+Create a CAS API key with the following permissions:
+
+* Threat Investigation
+* Threat Mitigation for Email Message
+
 ### Installation
 ### Linux
 
